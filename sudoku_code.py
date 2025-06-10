@@ -14,32 +14,26 @@ PUNCH_COUNT_TUPLE = ((6, 8, 8, 14, 14),#stage에 따른 빈칸 개수 튜플
                     (31, 36, 36, 42, 42, 58, 58),
                     (65, 65, 70, 70, 78, 110, 110),
                     (130, 130, 145, 145, 190)) #BLOCK_R*BLOCK_C < 27
-MIN_STAGE = 0
-MAX_STAGE = 4
 
-LOG_IN = 'l'
-SIGN_IN = 's'
+MIN_STAGE = 0
+MAX_STAGE = len(BLOCK_SIZE_TUPLE)-1
 
 PASSWORD = 0
 STAGE = 1
 MAX_SCORE = 2
 
-NAME_LEN_MIN = 3
-NAME_LEN_MAX = 10
+NAME_LEN_MAX_GLOBAL = 10
 
-PW_LEN_MIN = 5
-PW_LEN_MAX = 15
+USER_INFORMATION_FILE_NAME = "sudoku_users_information.csv"
 
-TURORIAL_SHOW_COUNT = 3
-
-SCATTER_POSSIBILITY = 40
-CLUSTER_POSSIBILITY = 70
-
-TOP_NUMBER = 3
+HORIZONTAL_BAR = "-"
+VALID= 1
+INVALID = 0
+REPEAT = -1
 ######################################################################################################
 
 def get_users_information_dict() :
-    FILE = open("sudoku_users_information.csv",'r')
+    FILE = open(USER_INFORMATION_FILE_NAME,'r')
     users_information_dict = {}
     for s in FILE.readlines() :
         name, pw, stage, max_score = s.strip().split(',')
@@ -47,105 +41,132 @@ def get_users_information_dict() :
     FILE.close()
     return users_information_dict
 
-def transfer_to_csv(name,pw,stage,max_score) :
+def convert_to_csv(name,pw,stage,max_score) :
     return name+','+pw+','+str(stage)+','+str(max_score)+'\n'
 
 def update_sudoku_users_information(users_information_dict) :
-    FILE = open("sudoku_users_information.csv",'w')
+    FILE = open(USER_INFORMATION_FILE_NAME,'w')
     for name, (pw, stage, max_score) in users_information_dict.items() :
-        FILE.write(transfer_to_csv(name,pw,stage,max_score))
+        FILE.write(convert_to_csv(name,pw,stage,max_score))
     FILE.close()
 
 def append_user_information(name, pw, stage, max_score) :
-    FILE = open("sudoku_users_information.csv",'a')
-    FILE.write(transfer_to_csv(name,pw,stage,max_score))
+    FILE = open(USER_INFORMATION_FILE_NAME,'a')
+    FILE.write(convert_to_csv(name,pw,stage,max_score))
     FILE.close()
 
 ######################################################################################################
-def get_user_name(user_input,users_information_dict) :
-    if user_input == LOG_IN :
-        while(True) :
-            name = input("user name : ")
-            if name in  users_information_dict :
-                print()
-                return name
-            else :
-                print("<사용자 정보가 없습니다!>")
-    elif user_input == SIGN_IN:
-        available_character = {chr(i) for i in range(ord('a'), ord('z')+1)} | {chr(i) for i in range(ord('0'), ord('9')+1)}
-        
-        print(f"<사용자 이름은 최소 {NAME_LEN_MIN}글자 최대 {NAME_LEN_MAX}글자까지 가능, 알파벳, 숫자만 사용 가능>")
-        while(True) :
-            name = input("user name : ")
-            if len(name) < NAME_LEN_MIN :
-                print(f"<{NAME_LEN_MIN}글자보다 짧습니다!>")
-            elif len(name) > NAME_LEN_MAX :
-                print(f"<{NAME_LEN_MAX}글자보다 깁니다!>")
-            elif len(available_character & set(name)) != len(set(name)) :
-                print("<허용되지 않는 문자가 포함되어 있습니다!>")
-            elif name in users_information_dict :
-                print("<사용 중인 이름입니다.>")
-            else :
-                print("<사용가능한 이름입니다.>\n")
-                return name
-            
-def get_user_pw(user_input,name,users_information_dict) :
-    if user_input == LOG_IN :
-        while(True) :
-            pw = input("user password : ")
-            if pw == users_information_dict[name][PASSWORD] :
-                print("<성공적으로 로그인이 완료되었습니다.>\n")
-                return pw
-            else :
-                print("<올바르지 않은 비밀번호입니다!>")
-    elif user_input == SIGN_IN:
-        available_character = {chr(i) for i in range(ord('a'), ord('z')+1)} | {chr(i) for i in range(ord('0'), ord('9')+1)}
-        
-        print(f"<비밀번호는 최소 {PW_LEN_MIN}글자 최대 {PW_LEN_MAX}글자까지 가능, 이름과 다른 비밀번호>\n<알파벳, 숫자만 가능, 최소 알파벳 한 개 포함, 최소 숫자 한 개 포함>")
-        while(True) :
-            pw = input("user password : ")
-            if len(pw) < PW_LEN_MIN :
-                print(f"<{PW_LEN_MIN}글자보다 짧습니다!>")
-            elif len(pw) > PW_LEN_MAX :
-                print(f"<{PW_LEN_MAX}글자보다 깁니다!>")
-            elif len(available_character & set(pw)) != len(set(pw)) :
-                print("<허용되지 않는 문자가 포함되어 있습니다!>")
-            elif len(numbers & set(pw)) == 0 :
-                print("<숫자가 없습니다!>")
-            elif len(alphabet & set(pw)) == 0 :
-                print("<알파벳이 없습니다!>")
-            elif pw == name :
-                print("<비밀번호와 이름이 같습니다.>")
-            else :
-                print("<성공적으로 회원가입이 완료되었습니다.>\n")
-                return pw
+def test_name_in_login(name,users_information_dict) :    
+    if name in users_information_dict :
+        print()
+        return True
+    print("<There is no user information available!>")
+    return False
+
+def test_pw_in_login(pw,correct_pw) :
+    if pw == correct_pw :
+        print("<You have successfully logged in.>\n")
+        return True
+    print("<The password is incorrect!>")
+    return False
+
+
+def test_name_in_signin(name,users_information_dict,v,NAME_LEN_MIN,NAME_LEN_MAX) :
+    if len(name) < NAME_LEN_MIN :
+        print(f"<It is shorter than {NAME_LEN_MIN} characters!>")
+        return False
+    if len(name) > NAME_LEN_MAX :
+        print(f"<It is longer than {NAME_LEN_MAX} characters!>")
+        return False
+    
+    NAME_SET = set(name)
+    if len(AVAILABLE_CHARACTER_SET & NAME_SET) != len(NAME_SET) :
+        print("<It contains invalid characters!>")
+        return False
+    if name in users_information_dict :
+        print("<This username is already in use!>")
+        return False
+    print("<This username is available.>\n")
+    return True
+
+
+def test_pw_in_signin(pw,name,LETTER_SET,NUMBER_SET,AVAILABLE_CHARACTER_SET,PW_LEN_MIN,PW_LEN_MAX) :
+    if len(pw) < PW_LEN_MIN :
+        print(f"<It is shorter than {PW_LEN_MIN} characters!>")
+        return False
+    if len(pw) > PW_LEN_MAX :
+        print(f"<It is longer than {PW_LEN_MAX} characters!>")
+        return False
+    
+    PW_SET = set(pw)
+    if len(AVAILABLE_CHARACTER_SET & PW_SET) != len(PW_SET) :
+        print("<It contains invalid characters!>")
+        return False
+    if len(LETTER_SET & PW_SET) == 0 :
+        print("<It contains only numbers!>")
+        return False
+    if len(NUMBER_SET & PW_SET) == 0 :
+        print("<It contains only letters!>")
+        return False
+    if pw == name :
+        print("<The password is the same as the username!>")
+        return False
+    print("<You have successfully signed up.>\n")
+    return True
+
             
 def get_user_information() :
-    print(f"<로그인 : {LOG_IN}, 회원가입 : {SIGN_IN}>")
+    LOG_IN = 'l'
+    SIGN_IN = 's'
+    print(f"<Log in : {LOG_IN}, Sign in : {SIGN_IN}>\n")
     while(True) :
-        user_input = input("입력 : ")
+        user_input = input("Enter : ")
+        if user_input != LOG_IN and user_input != SIGN_IN :
+            print("<The input format is invalid!>")
+            continue
+        users_information_dict = get_users_information_dict()
         if user_input == LOG_IN :
-            print("\n< 로그인 >\n")
-            break
-        elif user_input == SIGN_IN:
-            print("\n< 화원가입 >\n")
-            break
+            print("\n< Log in >\n")
+            while(True) :
+                name = input("user name : ")
+                if test_name_in_login(name,users_information_dict) :
+                    break
+            while(True) :
+                pw = input("user password : ")
+                if test_pw_in_login(pw,users_information_dict[name][PASSWORD]) :
+                    break
+            return name,users_information_dict[name][STAGE],users_information_dict[name][MAX_SCORE],users_information_dict
         else :
-            print("<입력형식에 맞지 않습니다!>")
-            
-    users_information_dict = get_users_information_dict()
-    
-    name = get_user_name(user_input,users_information_dict)
-    pw = get_user_pw(user_input,name,users_information_dict)
-    
-    if user_input == LOG_IN :
-        return name,users_information_dict[name][STAGE],users_information_dict[name][MAX_SCORE],users_information_dict
-    elif user_input == SIGN_IN:
-        append_user_information(name, pw, 0, 0)
-        users_information_dict[name] = [pw,0,0]
-        return name,0,0,users_information_dict
+            NAME_LEN_MIN = 3
+            NAME_LEN_MAX = NAME_LEN_MAX_GLOBAL
+            PW_LEN_MIN = 5
+            PW_LEN_MAX = 15
+            LETTER_SET = {chr(i) for i in range(ord('a'), ord('z')+1)}
+            NUMBER_SET = {chr(i) for i in range(ord('0'), ord('9')+1)}
+            AVAILABLE_CHARACTER_SET = LETTER_SET.union(NUMBER_SET)
+            print("\n< Sign in >\n")
+            print(f"<The username must be between {NAME_LEN_MIN} and {NAME_LEN_MAX} characters long>\n<It can only contain letters and numbers.>")
+            while(True) :
+                name = input("user name : ")
+                if test_name_in_signin(name,users_information_dict,AVAILABLE_CHARACTER_SET,NAME_LEN_MIN,NAME_LEN_MAX) :
+                    break
+            print(f"<The password must be between {PW_LEN_MIN} and {PW_LEN_MAX} characters long>\n<It can only contain letters and numbers.>\n<It must include at least one letter and at least one number.>\n<It must be different from the username>")
+            while(True) :
+                pw = input("user password : ")
+                if test_pw_in_signin(pw,name,LETTER_SET,NUMBER_SET,AVAILABLE_CHARACTER_SET,PW_LEN_MIN,PW_LEN_MAX) :
+                    break
+            append_user_information(name, pw, 0, 0)
+            users_information_dict[name] = [pw,0,0]
+            return name,0,0,users_information_dict
+        
 
 ######################################################################################################
+def get_start_ascii_in_board(BOARD_LENGTH) :
+    if BOARD_LENGTH < 10 :
+        return ord('1')
+    #9보다 크면 알파벳으로 설정
+    return ord('a')
+
 def get_board_size(stage) :
     BLOCK_R, BLOCK_C = BLOCK_SIZE_TUPLE[stage][randint(0,len(BLOCK_SIZE_TUPLE[stage])-1)] #stage에 따른 랜덤 보드 크기 얻기
     return BLOCK_R, BLOCK_C
@@ -161,10 +182,8 @@ def get_random_board(BLOCK_R, BLOCK_C) :
         return new_numbers
     
     board = []
-    if BOARD_LENGTH < 10 :
-        numbers = [i for i in range(1,BOARD_LENGTH+1)] #가능한 숫자를 담은 리스트 생성
-    else : #9보다 크면 알파벳으로 설정
-        numbers = [chr(i) for i in range(ord('a'), ord('a')+BOARD_LENGTH)]
+    START_ASCII = get_start_ascii_in_board(BOARD_LENGTH)
+    numbers = [chr(i) for i in range(START_ASCII, START_ASCII+BOARD_LENGTH)] #리스트 생성
         
     shuffle(numbers) #무작위 섞기
     
@@ -192,7 +211,7 @@ def shuffle_board(BLOCK_R,BLOCK_C,board) :
         numbers = [i for i in range(BLOCK_C)] #블록의 열의 순서를 담은 숫자 생성 
         shuffle(numbers) #무작위 섞기
         for i in range(BLOCK_C) :#섞인 숫서를 board에 적용
-            if i != numbers[i] :
+            if i == numbers[i] :
                 for j in range(BLOCK_C*BLOCK_R) :
                     board[j][COL_NUM+i] = COL_BLOCK[j][numbers[i]]
     for i in range(0,BLOCK_C*BLOCK_R,BLOCK_C) :
@@ -206,12 +225,12 @@ def get_punch_count(BLOCK_R,BLOCK_C,stage) :
             GAP = int(sqrt(PUNCH_COUNT_TUPLE[stage][i]/PUNCH_COUNT_TUPLE[MIN_STAGE][0]))
             return randint(PUNCH_COUNT_TUPLE[stage][i]-GAP,PUNCH_COUNT_TUPLE[stage][i]+GAP)
 
-def scatter_punch(BOARD_LENGTH,PUNCH_COUNT,board) :
+def scatter_punch(BOARD_LENGTH,PUNCH_COUNT) :
     board_to_coords = [(i, j) for i in range(BOARD_LENGTH) for j in range(BOARD_LENGTH)] #board의 모든 좌표를 list로 전환
     shuffle(board_to_coords)#섞기
     return board_to_coords[:PUNCH_COUNT]#섞인 상태에서 PUNCH_COUNT만큼 가져오기, 즉, 구멍 위치 가져오기
     
-def cluster_punch(BOARD_LENGTH,PUNCH_COUNT,board) :
+def cluster_punch(BOARD_LENGTH,PUNCH_COUNT) :
     punch_coord_list = []
     
     DIRECTION = ((1,0),(-1,0),(0,1),(0,-1))
@@ -233,7 +252,7 @@ def cluster_punch(BOARD_LENGTH,PUNCH_COUNT,board) :
         
     return punch_coord_list
 
-def diagonal_punch(BOARD_LENGTH,PUNCH_COUNT,board) :
+def diagonal_punch(BOARD_LENGTH,PUNCH_COUNT) :
     punch_coord_list = []
     
     left_punch_count = randint(PUNCH_COUNT//3,2*PUNCH_COUNT//3)# PUNCH_COUNT는 전체 칸의 1/3보다 작으므로 좌우 대각선 배치에서 곂칠 일 없음
@@ -254,17 +273,18 @@ def diagonal_punch(BOARD_LENGTH,PUNCH_COUNT,board) :
     return punch_coord_list
 
 def get_punched_board(BOARD_LENGTH,PUNCH_COUNT,board) :
+    SCATTER_POSSIBILITY = 40
+    CLUSTER_POSSIBILITY = 70
     punch_coord_list = []
     
     MODE_POSSIBILITY = randint(0,99)
     if MODE_POSSIBILITY < SCATTER_POSSIBILITY : #scatter mode
-        punch_coord_list = scatter_punch(BOARD_LENGTH,PUNCH_COUNT,board)
+        punch_coord_list = scatter_punch(BOARD_LENGTH,PUNCH_COUNT)
     elif MODE_POSSIBILITY < CLUSTER_POSSIBILITY : #cluster mode
-        punch_coord_list = cluster_punch(BOARD_LENGTH,PUNCH_COUNT,board)
+        punch_coord_list = cluster_punch(BOARD_LENGTH,PUNCH_COUNT)
     else : #diagonal mode
-        punch_coord_list = diagonal_punch(BOARD_LENGTH,PUNCH_COUNT,board)
+        punch_coord_list = diagonal_punch(BOARD_LENGTH,PUNCH_COUNT)
                 
-    
     punched_board = [row[:] for row in board] #깊은 복사
     for coord in punch_coord_list :
         punched_board[coord[0]][coord[1]] = '_' #빈칸 뚫기
@@ -278,7 +298,7 @@ def print_board(BLOCK_R,BLOCK_C,board,current_punch_count) :
     BOARD_LENGTH = BLOCK_R*BLOCK_C
     TITLE_LENGTH = (BOARD_LENGTH*2+BLOCK_R-2-len(TITLE))
     
-    buffer = TITLE + '-'*TITLE_LENGTH + '\n'
+    buffer = TITLE + HORIZONTAL_BAR*TITLE_LENGTH + "\n\n"
     
     for i in range(BOARD_LENGTH) :
         for j in range(BOARD_LENGTH) :
@@ -291,62 +311,77 @@ def print_board(BLOCK_R,BLOCK_C,board,current_punch_count) :
                 
     BLANK_SHOW = f"Blank : {current_punch_count}"
     BLANK_SHOW_LENGHTH = (BOARD_LENGTH*2+BLOCK_R-2-len(BLANK_SHOW))
-    buffer += '-'*BLANK_SHOW_LENGHTH + BLANK_SHOW + "\n\n"
+    buffer += HORIZONTAL_BAR*BLANK_SHOW_LENGHTH + BLANK_SHOW + "\n\n"
     print(buffer)
 
 ######################################################################################################
+def show_random_hint_coord(punch_coord_list,punched_board,board) :    
+    r, c = punch_coord_list[randint(0,len(punch_coord_list)-1)]#빈칸 리스트에서 무작위 빈칸 좌표 반환
+    print(f"<Revealing the value at position ({c+1}, {r+1}).>")
+    punched_board[r][c] = board[r][c]
+    punch_coord_list.remove((r,c)) #시간 복잡도가 크지만 set으로 하든 list로 하든 전체 시간 복잡도는 큰 차이 없음
+
+def show_correct_punch(user_r,user_c,punch_coord_list,punched_board,board) : 
+    punched_board[user_r][user_c] = board[user_r][user_c]
+    punch_coord_list.remove((user_r,user_c))
+
     
-def test_input_by_board(user_r,user_c,user_v,try_count,hint_count,punch_coord_list,board,punched_board) :
-    if user_v == "hint" :
-        user_r, user_c = punch_coord_list[randint(0,len(punch_coord_list)-1)]#빈칸 리스트에서 무작위 빈칸 좌표 반환
-        punched_board[user_r][user_c] = board[user_r][user_c]
-        punch_coord_list.remove((user_r,user_c)) #시간 복잡도가 크지만 set으로 하든 list로 하든 전체 시간 복잡도는 큰 차이 없음
-        return try_count+1,hint_count+1,f"<({user_c+1},{user_r+1}) 위치의 값을 공개합니다.>"
-    elif punched_board[user_r][user_c] != '_' :
-        return -1,-1,"<빈칸이 아닙니다!>"
-    elif board[user_r][user_c] == user_v :
-        punched_board[user_r][user_c] = board[user_r][user_c]
-        punch_coord_list.remove((user_r,user_c))
-        return try_count+1,hint_count,"<올바른 입력값입니다!>"
-    else :
-        return try_count+1,hint_count,"<잘못된 입력값입니다!>"
-    
-def test_input_by_condition(user_input,try_count,hint_count,punch_coord_list,BOARD_LENGTH,board,punched_board) :
+def test_input_by_condition(user_input,BOARD_LENGTH) :
     if user_input == "hint" : #힌트 사용 시 
-        return test_input_by_board(0,0,"hint",try_count,hint_count,punch_coord_list,board,punched_board)
+        return REPEAT,REPEAT,"hint"
     if user_input.count(',') != 1 :#콤마가 없으면
-        return -1,-1,"<입력형식에 맞지 않습니다!>"
+        print("<The input format is incorrect!>")
+        return REPEAT,REPEAT,REPEAT
     user_c, r_amp_v = user_input.split(',')#첫 번째 값 추출
     if(not user_c.isdigit() or not (1 <= int(user_c) <= BOARD_LENGTH)) :#첫 번째 값이 범위에 맞지 않으면
-        return -1,-1,"<가로가 범위를 초과하였습니다!>"
+        print("<The column is out of range!>")
+        return REPEAT,REPEAT,REPEAT
     if r_amp_v.count('=') != 1 :#괄호가 없으면
-        return -1,-1,"<입력형식에 맞지 않습니다!>"
+        print("<The input format is incorrect!>")
+        return REPEAT,REPEAT,REPEAT
     user_r, user_v = r_amp_v.split('=')#두,세 번째 값 추출
     if(not user_r.isdigit() or not (1 <= int(user_r) <= BOARD_LENGTH)) :#두 번째 값이 범위에 맞지 않으면
-        return -1,-1,"<세로가 범위를 초과하였습니다!>"
-    if(BOARD_LENGTH < 10) :
-        if(user_v.isdigit() and 1 <= int(user_v) <= BOARD_LENGTH) :#세 번째값이 범위 맞으면
-            return test_input_by_board(int(user_r)-1,int(user_c)-1,int(user_v),try_count,hint_count,punch_coord_list,board,punched_board)
-    else :#최대 숫자가 10이상일 경우 알파뱃으로 입력받기
-        if(ord('a') <= ord(user_v) < ord('a') + BOARD_LENGTH) : #세 번째값이 범위 맞으면 
-            return test_input_by_board(int(user_r)-1,int(user_c)-1,user_v,try_count,hint_count,punch_coord_list,board,punched_board) #입력받은 알파벳으로 숫자로 치환
-    return -1,-1,"<입력값이 범위를 초과하였습니다!>"
+        print("<The row is out of range!>")
+        return REPEAT,REPEAT,REPEAT
+    
+    START_ASCII = get_start_ascii_in_board(BOARD_LENGTH)
+    if START_ASCII > ord(user_v) or ord(user_v) >= START_ASCII+ BOARD_LENGTH :#세 번째값이 범위 맞으면
+        print("<The input value is out of range!>")
+        return REPEAT,REPEAT,REPEAT
+    return int(user_r)-1,int(user_c)-1,user_v
 
-def get_user_input(try_count,hint_count,punch_coord_list,BOARD_LENGTH,board,punched_board) :
+
+def test_input_by_board(user_r,user_c,user_v,punched_board,board) :
+    if punched_board[user_r][user_c] != '_' :
+        print("<This is not an empty space!>")
+        return REPEAT
+    if board[user_r][user_c] == user_v :
+        print("<This is a valid input!>\n")
+        return VALID
+    print("<This is an invalid input!>")
+    return INVALID
+    
+
+def get_user_input(try_count,hint_count,punch_coord_list,punched_board,BOARD_LENGTH,board) :
+    TURORIAL_SHOW_COUNT = 3
     if(try_count < TURORIAL_SHOW_COUNT) :
-        print("<\"가로,세로=입력값\" 형태로 입력하세요.>")
-        if(BOARD_LENGTH < 10) :
-            print(f"<가로 : 1 ~ {BOARD_LENGTH}, 세로 : 1 ~ {BOARD_LENGTH}, 입력값 : 1 ~ {BOARD_LENGTH}>") 
-        else :
-            print(f"<가로 : 1 ~ {BOARD_LENGTH}, 세로 : 1 ~ {BOARD_LENGTH}, 입력값 : a ~ {chr(BOARD_LENGTH+ord('a')-1)}>")
-        print("<\"hint\"를 입력하면 빈칸 중 하나를 공개하지만 점수가 감점됩니다.>")
+        print("<Please enter in the format: “Column,Row=Value”.>")
+        START_ASCII = get_start_ascii_in_board(BOARD_LENGTH)
+        print(f"<Column: 1 to {BOARD_LENGTH}, Row: 1 to {BOARD_LENGTH}, Value: {chr(START_ASCII)} to {chr(BOARD_LENGTH + START_ASCII - 1)}>\n<Typing “hint” will reveal one of the empty cells, but your score will be reduced.>")
     while(True) :
-        user_input = input("입력 : ")
-        t,h,text = test_input_by_condition(user_input,try_count,hint_count,punch_coord_list,BOARD_LENGTH,board,punched_board)
-        print(text)
-        if t != -1 and h != -1 :
-            print()
-            return t,h 
+        user_input = input("Enter : ")
+        user_r, user_c, user_v = test_input_by_condition(user_input,BOARD_LENGTH)
+        if user_v == REPEAT :
+            continue
+        if user_v == "hint" :
+            show_random_hint_coord(punch_coord_list,punched_board,board)
+            return try_count+1,hint_count+1
+        TEST_VALUE = test_input_by_board(user_r,user_c,user_v,punched_board,board)
+        if TEST_VALUE == VALID :
+            show_correct_punch(user_r,user_c,punch_coord_list,punched_board,board)
+            return try_count+1,hint_count
+        if TEST_VALUE == INVALID :
+            try_count += 1
         
 ######################################################################################################
         
@@ -380,68 +415,86 @@ def time_to_string(taken_time) :
 
 ######################################################################################################
 
-def print_update_records(name,stage,score,try_count,hint_count,PUNCH_COUNT,TAKEN_TIME_TEXT,users_information_dict) :
-    def get_next_stage(score) : #유저의 점수에 따라 다음 stage로 넘어갈 수 있는지 없는지 판단
+def print_records(max_score,stage,score,try_count,hint_count,PUNCH_COUNT,TAKEN_TIME_TEXT) :
+    buffer_list = [HORIZONTAL_BAR]
+    buffer_list.append(f" Record of {name}")
+    if score > max_score :
+        buffer_list.append(f" Score: {score} points | New High Score!")
+    else :
+        buffer_list.append(f" Score: {score} points | Highest Score: {max_score}")
+    buffer_list.append(f" Time Taken: {TAKEN_TIME_TEXT} | Attempts: {try_count}/{PUNCH_COUNT} | Hints Used: {hint_count}")
+    return buffer_list
+
+def update_records(score,max_score,stage) :
+    def get_next_stage() : #유저의 점수에 따라 다음 stage로 넘어갈 수 있는지 없는지 판단
         POINT = score/(stage+1)
         if(POINT < 25 and stage > MIN_STAGE) : #stage 가중치를 제거한 점수가 하위 25% 이내라면
             return stage-1
-        elif(POINT >= 75 and stage < MAX_STAGE) :#stage 가중치를 제거한 점수가 상위 25% 이내라면
+        if(POINT >= 75 and stage < MAX_STAGE) :#stage 가중치를 제거한 점수가 상위 25% 이내라면
             return stage+1
         return stage #어느 것도 아니라면
-    RECORD = f" 소요시간 : {TAKEN_TIME_TEXT} | 시도횟수 : {try_count}/{PUNCH_COUNT} | 힌트 사용 횟수 : {hint_count} "
-    print('-'*len(RECORD))
-    print(f" {name}님의 기록 ")
-    if score > users_information_dict[name][MAX_SCORE] :
-        print(f" 점수 : {score}점 | 최고 기록 경신!")
-        users_information_dict[name][MAX_SCORE] = score #최고 기록 업데이트
-        update_sudoku_users_information(users_information_dict)
-    else :
-        print(f" 점수 : {score}점 | 최고 점수 : {users_information_dict[name][MAX_SCORE]}")
-    print(f"{RECORD}")
-    print('-'*len(RECORD))
-    users_information_dict[name][STAGE] = get_next_stage(score)
-    update_sudoku_users_information(users_information_dict)
-
     
-def print_standing(name, users_information_dict) :
+    if score > max_score :
+        max_score = score #최고 기록 업데이트
+    return get_next_stage(),max_score
+    
+def print_standing(name,users_information_dict) :
+    TOP_NUMBER = 5
+    buffer_list = [HORIZONTAL_BAR]
     def print_rank(r,ls) :
+        NAME_LEN_MAX = NAME_LEN_MAX_GLOBAL
         NAME_SPACE_LENGTH = NAME_LEN_MAX-len(ls[0])
-        print(f"{r}등 \t| {ls[0]}"+' '*NAME_SPACE_LENGTH+f" | {ls[1][MAX_SCORE]}점")
+        suffix = "th"
+        rank_number = str(r)
+        if rank_number[-1] == '1' :
+            suffix = "st"
+        elif rank_number[-1] == '2' :
+            suffix = "nd"
+        elif rank_number[-1] == '3' :
+            suffix = "rd"
+        RANK_SPACE_LENGTH = 8-len(rank_number+suffix)
+        buffer_list.append(f"{rank_number+suffix}{' ' * RANK_SPACE_LENGTH} | {ls[0]}{' ' * NAME_SPACE_LENGTH} | {ls[1][MAX_SCORE]} points")
     
     STANDING = sorted(users_information_dict.items(),key = lambda l : l[1][MAX_SCORE],reverse = True)
     
-    rank = 1
-    prev_score = 0 #동점자 처리를 위한 전 사람 점수 저장
-    sub_rank = 1 #동점자 처리를 위한 전 사람 등수 저장
+    prev_high_score,prev_score = 0,0 #동점자 처리를 위한 전 사람 점수 저장
     current_user_appear = False
-    for ls in STANDING :
-        if rank <= TOP_NUMBER : #상위 TOP_NUMBER명만 출력
-            if prev_score != ls[1][MAX_SCORE] :
-                prev_score = ls[1][MAX_SCORE]
-                print_rank(rank,ls)
-                sub_rank = rank
-            else : #동점자 처리
-                print_rank(subrank,ls)
-            if ls[0] == name : #현재 사용자가 등장한다면
-                current_user_appear = True
-        elif not current_user_appear: #상위 3명 안에 현재 사용자가 없다면 나올 때까지 반복
-            if prev_score != ls[1][MAX_SCORE] :
-                prev_score = ls[1][MAX_SCORE]
-                if ls[0] == name :
-                    print_rank(rank,ls)
-                    break
-                sub_rank = rank
-            elif ls[0] == name :
-                print_rank(subrank,ls)
-                break
-        else :
+    rank = 0
+    while rank < len(STANDING) :
+        if current_user_appear and rank >= TOP_NUMBER :
             break
+        if not current_user_appear :
+            prev_high_score = prev_score
+        prev_score = STANDING[rank][1][MAX_SCORE]
+        subrank = rank
+        while subrank < len(STANDING) :
+            if prev_score != STANDING[subrank][1][MAX_SCORE] :
+                rank = subrank-1
+                break
+            if name == STANDING[subrank][0] :
+                current_user_appear = True 
+            if rank < TOP_NUMBER : #상위 TOP_NUMBER등만 출력
+                print_rank(rank+1,STANDING[subrank])
+            elif name == STANDING[subrank][0] : # 상위 출력 밖에서 사용자가 등장한다면
+                buffer_list.append("...")
+                print_rank(rank+1,STANDING[subrank])
+                break
+            subrank += 1
         rank += 1
+        
+    if prev_high_score != 0 :
+        buffer_list.append(HORIZONTAL_BAR)
+        LEFT_POINT = round(prev_high_score-users_information_dict[name][MAX_SCORE],2)
+        buffer_list.append(f" {LEFT_POINT} points left to reach the next rank.")
+    return buffer_list
 ######################################################################################################
-    
-def set_game() :
+
+def game_interface() :
+    print("SUDOKU GAME PLAY\n")
     name, stage, max_score, users_information_dict = get_user_information() #유저의 저장된 정보가 있으면 가져오고 없으면 생성 
-    #name, pw, max_score,stage = "semi","sesomi1",0,4 #----------------------------------------테스트용, 테스트 시에 윗 줄들을 주석처리, 이 줄을 주석처리 해제하고 사용하시오
+    return name, stage, max_score, users_information_dict
+
+def set_game(stage) :
     BLOCK_R,BLOCK_C = get_board_size(stage)
     board = get_random_board(BLOCK_R,BLOCK_C)#stage에 따른 무작위 보드 생성
     shuffle_board(BLOCK_R,BLOCK_C,board)#보드 섞기
@@ -449,7 +502,7 @@ def set_game() :
     PUNCH_COUNT = get_punch_count(BLOCK_R,BLOCK_C,stage)#stage에 따른 보드 구멍 개수 반환
     punched_board, punch_coord_list = get_punched_board(BLOCK_R*BLOCK_C,PUNCH_COUNT,board)#보드에 구멍 뚫기, 힌트를 위한 구멍 좌표 set 반환
     
-    return name, stage, BLOCK_R, BLOCK_C, board, PUNCH_COUNT, punched_board, punch_coord_list, users_information_dict
+    return BLOCK_R, BLOCK_C, board, PUNCH_COUNT, punched_board, punch_coord_list, users_information_dict
 
 def start_game(stage, BLOCK_R, BLOCK_C, board, PUNCH_COUNT, punched_board, punch_coord_list) :
     try_count = 0#시도 횟수
@@ -457,7 +510,7 @@ def start_game(stage, BLOCK_R, BLOCK_C, board, PUNCH_COUNT, punched_board, punch
     START_TIME = perf_counter()#시간 제기 시작
     while(len(punch_coord_list) != 0) : #빈칸이 존재할 경우
         print_board(BLOCK_R,BLOCK_C,punched_board,len(punch_coord_list))#보드 출력
-        try_count, hint_count = get_user_input(try_count,hint_count,punch_coord_list,BLOCK_R*BLOCK_C,board,punched_board)#사용자 입력에 따라 올바른 값인지 판단하고 변경된 try_count, hint_count 반환
+        try_count, hint_count = get_user_input(try_count,hint_count,punch_coord_list,punched_board,BLOCK_R*BLOCK_C,board)#사용자 입력에 따라 올바른 값인지 판단하고 변경된 try_count, hint_count 반환
         
     TAKEN_TIME = perf_counter()-START_TIME#시간 제기 종료, 소요 시간 반환
     print_board(BLOCK_R,BLOCK_C,punched_board,0)#마지막으로 완성된 보드 출력
@@ -465,18 +518,33 @@ def start_game(stage, BLOCK_R, BLOCK_C, board, PUNCH_COUNT, punched_board, punch
     return try_count, hint_count, TAKEN_TIME
 
 
-def finish_game(name,stage,try_count,hint_count,PUNCH_COUNT,BOARD_LENGTH,TAKEN_TIME,users_information_dict) :
+def finish_game(name,stage,max_score,try_count,hint_count,PUNCH_COUNT,BOARD_LENGTH,TAKEN_TIME,users_information_dict) :
     #점수 산출
     score = get_score(stage,try_count,hint_count,PUNCH_COUNT,BOARD_LENGTH,TAKEN_TIME)
     #소요 시간을 h,m,s 문자열로 전환
     TAKEN_TIME_TEXT = time_to_string(TAKEN_TIME)
     #결과 출력
-    print_update_records(name,stage,score,try_count,hint_count,PUNCH_COUNT,TAKEN_TIME_TEXT,users_information_dict) 
+    buffer_list = print_records(users_information_dict[name][MAX_SCORE],stage,score,try_count,hint_count,PUNCH_COUNT,TAKEN_TIME_TEXT)
+    users_information_dict[name][STAGE], users_information_dict[name][MAX_SCORE] = update_records(score,max_score,stage)
+    update_sudoku_users_information(users_information_dict)
     #순위표 출력
-    print_standing(name,users_information_dict)
-
+    buffer_list.extend(print_standing(name,users_information_dict))
+    #전체출력 
+    buffer = ""
+    max_length_of_string = 0
+    for b in buffer_list :
+        if b != HORIZONTAL_BAR and max_length_of_string < len(b) :
+            max_length_of_string = len(b)
+    for b in buffer_list :
+        if b == HORIZONTAL_BAR :
+            buffer += HORIZONTAL_BAR*max_length_of_string
+        else :
+            buffer += b
+        buffer += '\n'
+    print(buffer)
+        
 ######################################################################################################
-
-name, stage, BLOCK_R, BLOCK_C, board, PUNCH_COUNT, punched_board, punch_coord_list, users_information_dict = set_game()#게임 준비
+name, stage, max_score, users_information_dict = game_interface()#게임 인터페이스
+BLOCK_R, BLOCK_C, board, PUNCH_COUNT, punched_board, punch_coord_list, users_information_dict = set_game(stage)#게임 준비
 try_count, hint_count, TAKEN_TIME = start_game(stage, BLOCK_R, BLOCK_C, board, PUNCH_COUNT, punched_board, punch_coord_list)#게임 시작
-finish_game(name,stage,try_count,hint_count,PUNCH_COUNT,BLOCK_R*BLOCK_C,TAKEN_TIME,users_information_dict)#게임 종료
+finish_game(name,stage,max_score,try_count,hint_count,PUNCH_COUNT,BLOCK_R*BLOCK_C,TAKEN_TIME,users_information_dict)#게임 종료
