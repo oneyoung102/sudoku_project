@@ -19,7 +19,7 @@
 
   올바른 이름과 비밀번호를 입력해야 합니다.
   
-  [**로그인 상태 플레이**](https://github.com/oneyoung102/Sudoku_project/blob/main/README.md#로그인-플레이)
+  [**로그인 상태 플레이**](https://github.com/oneyoung102/Sudoku_project/blob/main/README.md#비로그인-플레이)
 
 <hr/>
 
