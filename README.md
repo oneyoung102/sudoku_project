@@ -46,7 +46,6 @@
   > **오차범위 계산식**
   > ```python
   > GAP = int(sqrt(PUNCH_COUNT_TUPLE[stage][i]/PUNCH_COUNT_TUPLE[MIN_STAGE][0]))
-  > ``  
 
 
 ### 빈칸 배치 모드
