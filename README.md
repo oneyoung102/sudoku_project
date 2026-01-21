@@ -18,7 +18,7 @@
 
   올바른 이름과 비밀번호를 입력해야 합니다.
   
-  [**플레이**](https://github.com/oneyoung102/Sudoku_project/edit/main/README.md#회원-플레이)
+  [**플레이**](https://github.com/oneyoung102/Sudoku_project/blob/main/README.md#회원-플레이)
 
 ## 난이도
 
