@@ -126,7 +126,7 @@
 2. 동점자는 같은 등수로 처리합니다.
 3. 본인보다 높은 등수의 사람과의 점수차를 알려줍니다.
    
-<img width="357" height="210" alt="image" src="https://github.com/user-attachments/assets/89d8e06f-03b9-4c9b-bfc7-5e4bc02d2e93" />   
+<img width="357" height="210" alt="image" src="https://github.com/user-attachments/assets/89d8e06f-03b9-4c9b-bfc7-5e4bc02d2e93" />     
 > aaa가 보는 순위표입니다.
 
 <hr/>
