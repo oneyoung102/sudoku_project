@@ -120,6 +120,8 @@
 >   score = 0
 > return score
 
+<hr/>
+
 ## 순위표
 
 1. 본인을 포함하여 1등부터 5등까지의 점수와 이름을 공개합니다.
@@ -128,6 +130,8 @@
    
 <img width="357" height="210" alt="image" src="https://github.com/user-attachments/assets/89d8e06f-03b9-4c9b-bfc7-5e4bc02d2e93" />   
 > aaa가 보는 순위표입니다.
+
+<hr/>
 
 ## 플레이
 
