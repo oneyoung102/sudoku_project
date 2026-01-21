@@ -13,13 +13,13 @@
   이름 : 3글자 이상, 10글자 이하, 알파벳&숫자만 가능   
   비밀번호 : 5글자 이상, 15글자 이하, 알파벳&숫자만 가능, 최소한 숫자, 알파벳 한 개씩 포함, 이름과 달라야 함
 
-  [**비로그인 상태 플레이**](https://github.com/oneyoung102/Sudoku_project/blob/main/README.md#비회원-플레이)
+  [**비로그인 상태 플레이**](https://github.com/oneyoung102/Sudoku_project/blob/main/README.md#비로그인-플레이)
 
 - #### 로그인
 
   올바른 이름과 비밀번호를 입력해야 합니다.
   
-  [**로그인 상태 플레이**](https://github.com/oneyoung102/Sudoku_project/blob/main/README.md#회원-플레이)
+  [**로그인 상태 플레이**](https://github.com/oneyoung102/Sudoku_project/blob/main/README.md#로그인-플레이)
 
 <hr/>
 
