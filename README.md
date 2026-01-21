@@ -126,7 +126,8 @@
 2. 동점자는 같은 등수로 처리합니다.
 3. 본인보다 높은 등수의 사람과의 점수차를 알려줍니다.
    
-<img width="357" height="210" alt="image" src="https://github.com/user-attachments/assets/89d8e06f-03b9-4c9b-bfc7-5e4bc02d2e93" />     
+<img width="357" height="210" alt="image" src="https://github.com/user-attachments/assets/89d8e06f-03b9-4c9b-bfc7-5e4bc02d2e93" />    
+
 > aaa가 보는 순위표입니다.
 
 <hr/>
@@ -134,6 +135,7 @@
 ## 플레이
 
 > **sudoku_code.py**를 실행하여 쉘에서 사용자 입력으로 플레이합니다.
+> **sudoku_users_information.csv**에 회원 정보가 저장됩니다.
 
 - #### 비로그인 플레이
     1. 점수는 기록되지 않으며, **1단계**만 플레이할 수 있습니다.
