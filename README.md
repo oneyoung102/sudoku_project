@@ -134,7 +134,7 @@
 
 ## 플레이
 
-> **sudoku_code.py**를 실행하여 쉘에서 사용자 입력으로 플레이합니다.
+> **sudoku_code.py**를 실행하여 쉘에서 사용자 입력으로 플레이합니다.   
 > **sudoku_users_information.csv**에 회원 정보가 저장됩니다.
 
 - #### 비로그인 플레이
